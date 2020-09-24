@@ -4,7 +4,7 @@
       <el-col :span="12">
         <el-form ref="form" label-width="80px">
           <el-form-item label="城市名称">
-            <el-input v-model="city.name" />
+            <el-input v-model="city.name" @input="pinyin" />
           </el-form-item>
         </el-form>
         <el-form ref="form" label-width="80px">
@@ -22,41 +22,51 @@
 </template>
 
 <script>
-import axios from 'axios'
-export default {
-  name: 'CreateCity',
-  components: {
+  import axios from 'axios'
+  import pinyin from 'pinyin'
+  export default {
+    name: 'CreateCity',
+    components: {
 
-  },
-  data() {
-    return {
-      city: {
-        name: '',
-        index: 'Z'
+    },
+    data() {
+      return {
+        city: {
+          name: '',
+          index: 'Z'
+        }
+      }
+    },
+    methods: {
+      onSubmit() {
+        axios.post('/city/create', {
+          name: this.city.name,
+          index: this.city.index
+        }).then(res => {
+          console.log(res.data)
+          this.$message({
+            message: res.data.msg,
+            type: 'success'
+          })
+          this.$router.push({
+            path: '/city/list'
+          })
+        })
+      },
+      cancel() {
+        this.city.name = '',
+          this.city.index = 'Z'
+      },
+      pinyin() {
+        if (this.city.name) {
+          const first = pinyin(this.city.name[0], {
+            style: pinyin.STYLE_FIRST_LETTER
+          }) //拿到首字符
+          // console.log(first[0][0].toUpperCase())
+          this.city.index = first[0][0].toUpperCase()
+        }
       }
     }
-  },
-  methods: {
-    onSubmit() {
-      axios.post('/city/create', {
-        name: this.city.name,
-        index: this.city.index
-      }).then(res => {
-        console.log(res.data)
-        this.$message({
-          message: res.data.msg,
-          type: 'success'
-        })
-        this.$router.push({
-          path: '/city/list'
-        })
-      })
-    },
-    cancel() {
-      this.city.name = '',
-      this.city.index = 'Z'
-    }
   }
-}
 
 </script>
