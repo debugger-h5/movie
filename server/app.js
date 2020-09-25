@@ -2,12 +2,24 @@ const express = require('express')
 const app = new express()
 var bodyParser = require('body-parser')
 const City = require('./model/city')
+const Movie = require('./model/movie')
+const multer = require('multer')
 app.use(bodyParser.urlencoded({ extended: false }))
-
-// parse application/json
+app.use('/uploads', express.static('uploads'))
+    // parse application/json
 app.use(bodyParser.json())
 
 
+var storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, 'uploads')
+    },
+    filename: function(req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + file.originalname)
+    }
+})
+
+var upload = multer({ storage: storage })
 
 
 app.post('/user/login', function(req, res) {
@@ -49,7 +61,19 @@ app.post('/city/create', (req, res) => {
 })
 
 // 获取所有的城市信息
-app.get('/show', async(req, res) => {
+app.get('/city', async(req, res) => {
+        City.find().then(mon => {
+            if (mon) {
+                res.json({
+                    code: 20000,
+                    msg: '获取成功',
+                    list: mon
+                })
+            }
+        })
+    })
+    // 获取分页的城市信息
+app.get('/citypage', async(req, res) => {
     const page = req.query.page || 1 //当前页码
     const pagesize = req.query.pagesize || 5 //一页显示行数
     const start = ((Number(page) - 1) * Number(pagesize)) //从那一页查数据
@@ -57,7 +81,6 @@ app.get('/show', async(req, res) => {
     const total = await City.find() //所有的数据
         // console.log(total.length) 所有数据的长度
     const result = await City.find().skip(start).limit(skips) //当前页数查询的数据
-
     res.json({
             code: 20000,
             msg: '获取成功',
@@ -75,9 +98,36 @@ app.get('/show', async(req, res) => {
         // })
 })
 
-//删除城市信息
+
+// 获取单个城市信息
+app.get('/citys/:id', (req, res) => {
+        const id = req.params.id
+        City.findById(id).then(mon => {
+            if (mon) {
+                res.json({
+                    code: 20000,
+                    msg: '查询成功',
+                    list: mon
+                })
+            }
+        })
+    })
+    // 修改数据
+app.put('/put/:id', (req, res) => {
+        const id = req.params.id
+        console.log(id)
+        City.findByIdAndUpdate(id, req.body).then(mon => {
+            if (mon) {
+                res.json({
+                    code: 20000,
+                    msg: '修改成功'
+                })
+            }
+        })
+    })
+    //删除城市信息
 app.delete('/del/:id', (req, res) => {
-    console.log(req.params.id)
+    // console.log(req.params.id)
     City.findByIdAndDelete(req.params.id).then(mon => {
         if (mon) {
             res.json({
@@ -87,6 +137,71 @@ app.delete('/del/:id', (req, res) => {
         }
     })
 })
+
+// // 图片上传接口
+app.post('/upload', upload.single('avatar'), function(req, res, next) {  
+    res.json({
+        code: 20000,
+        msg: '图片已上传',
+        path: req.file.path     
+    })
+
+})
+
+// 添加电影信息
+app.post('/movie/create', (req, res) => {
+    // console.log(req.body.region)
+    // City.findById(req.body.region).then(data => {
+    //     console.log(data)
+    // })
+    const movie = new Movie({
+        title: req.body.title,
+        imageUrl: req.body.imageUrl,
+        stars: req.body.stars,
+        ratings: req.body.ratings,
+        description: req.body.description,
+        p: req.body.region
+    })
+
+    movie.save().then(mon => {
+        // console.log(mon)
+        if (mon) {
+            res.json({
+                code: 20000,
+                msg: '上传成功'
+            })
+        }
+    })
+})
+
+// 显示所有电影信息
+app.get('/movie', (req, res) => {
+    Movie.find({}).populate('p').then(mon => {
+        // console.log(mon)
+        res.json({
+            code: 20000,
+            list: mon,
+            msg: '电影信息加载完成'
+        })
+    })
+})
+
+// 删除电影信息
+app.delete('/movie/del/:id', (req, res) => {
+    console.log(req.params.id)
+    Movie.findByIdAndDelete(req.params.id).then(mon => {
+        if (mon) {
+            res.json({
+                code: 20000,
+                msg: '删除完成'
+            })
+        }
+    })
+})
+
+
+
+
 
 
 

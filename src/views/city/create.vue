@@ -43,7 +43,7 @@
           name: this.city.name,
           index: this.city.index
         }).then(res => {
-          console.log(res.data)
+          // console.log(res.data)
           this.$message({
             message: res.data.msg,
             type: 'success'

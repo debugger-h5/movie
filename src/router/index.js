@@ -170,7 +170,7 @@ export const constantRoutes = [{
                 meta: { title: '添加城市', icon: 'edit' }
             },
             {
-                path: 'edit/:id(\\d+)',
+                path: 'edit/:id',
                 component: () =>
                     import ('@/views/city/edit'),
                 name: 'EditCity',
@@ -185,7 +185,41 @@ export const constantRoutes = [{
                 meta: { title: '城市展示', icon: 'list' }
             }
         ]
+    },
+    {
+        path: '/movie',
+        component: Layout,
+        redirect: '/movie/list',
+        name: 'movie',
+        meta: {
+            title: '电影管理',
+            icon: 'el-icon-s-help'
+        },
+        children: [{
+                path: 'create',
+                component: () =>
+                    import ('@/views/movie/create'),
+                name: 'CreateMovie',
+                meta: { title: '添加电影', icon: 'edit' }
+            },
+            {
+                path: 'edit/:id',
+                component: () =>
+                    import ('@/views/movie/edit'),
+                name: 'EditMovie',
+                meta: { title: '修改电影', noCache: true, activeMenu: '/movie/list' },
+                hidden: true
+            },
+            {
+                path: 'list',
+                component: () =>
+                    import ('@/views/movie/list'),
+                name: 'movieList',
+                meta: { title: '电影展示', icon: 'list' }
+            }
+        ]
     }
+
 ]
 
 /**
